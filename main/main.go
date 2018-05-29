@@ -128,17 +128,43 @@ func (l Lexicon) TwoWordFollower(s string) (string, error) {
 	return tally.Max(), nil
 }
 
+// RandomSentence returns a sentence from a seed string
+func (l Lexicon) RandomSentence(seed string) string {
+	var sentence []string
+	var err error
+	word := seed
+
+	for {
+		sentence = append(sentence, word)
+
+		if len(sentence) > 2 {
+			word, err = l.TwoWordFollower(
+				strings.Join(sentence[len(sentence)-2:], " "),
+			)
+			if err == nil {
+				continue
+			}
+		}
+
+		word, err = l.OneWordFollower(sentence[len(sentence)-1])
+		if err == nil {
+			continue
+		}
+
+		break
+	}
+	return strings.Join(sentence, " ")
+}
+
 func main() {
+	l := NewLexicon()
+
 	r, err := os.Open("data/hhgttg.txt")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-
-	l := NewLexicon()
 	l.IngestReader(r)
-	w, _ := l.OneWordFollower("hello")
-	fmt.Println(w)
-	w, _ = l.TwoWordFollower("at a")
-	fmt.Println(w)
+
+	fmt.Println(l.RandomSentence("hello"))
 }

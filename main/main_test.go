@@ -69,3 +69,13 @@ func TestIngestReader(t *testing.T) {
 		t.Errorf("expected %v, got %v", expected, actual)
 	}
 }
+
+func TestRandomSentence(t *testing.T) {
+	l := NewLexicon()
+	l.IngestString("a b c d e")
+	expected := "a b c d e"
+	actual := l.RandomSentence("a")
+	if actual != expected {
+		t.Errorf("expected %s, got %s", expected, actual)
+	}
+}
