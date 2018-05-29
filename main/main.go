@@ -25,15 +25,49 @@ func alphanum(s string) string {
 	return clean
 }
 
+// Tally tracks the count of strings in a corpus
+type Tally struct {
+	m map[string]int
+}
+
+// NewTally returns a Tally ready to count strings
+func NewTally() *Tally {
+	return &Tally{make(map[string]int)}
+}
+
+// Size returns the number of entries in this Tally
+func (t Tally) Size() int {
+	return len(t.m)
+}
+
+// Max returns the Tally entry with the highest count
+func (t Tally) Max() string {
+	key := ""
+	max := 0
+	fmt.Println(t.m)
+	for k, v := range t.m {
+		if v > max {
+			key = k
+			max = v
+		}
+	}
+	return key
+}
+
+// Incr increases the value of a Tally entry
+func (t Tally) Incr(key string) {
+	t.m[key]++
+}
+
 // Lexicon defines a vocabulary for text structures
 type Lexicon struct {
-	twoWordFollowers map[string][]string
+	twoWordFollowers map[string]*Tally
 }
 
 // NewLexicon returns a Lexicon ready to ingest data
 func NewLexicon() Lexicon {
 	return Lexicon{
-		twoWordFollowers: make(map[string][]string),
+		twoWordFollowers: make(map[string]*Tally),
 	}
 }
 
@@ -46,7 +80,10 @@ func (l Lexicon) IngestString(s string) {
 	for i := 0; i < len(parts)-2; i++ {
 		key := strings.Join([]string{parts[i], parts[i+1]}, " ")
 		val := alphanum(parts[i+2])
-		l.twoWordFollowers[key] = append(l.twoWordFollowers[key], val)
+		if l.twoWordFollowers[key] == nil {
+			l.twoWordFollowers[key] = NewTally()
+		}
+		l.twoWordFollowers[key].Incr(val)
 	}
 }
 
@@ -68,12 +105,11 @@ func (l Lexicon) IngestReader(r io.Reader) {
 
 // SuggestTwoWordFollower returns a following word for two words
 func (l Lexicon) SuggestTwoWordFollower(s string) (string, error) {
-	val, ok := l.twoWordFollowers[s]
-	if !ok || len(val) == 0 {
+	tally, ok := l.twoWordFollowers[s]
+	if !ok || tally.Size() == 0 {
 		return "", fmt.Errorf("two word follower not found for %s", s)
 	}
-	fmt.Println(val)
-	return val[0], nil
+	return tally.Max(), nil
 }
 
 func main() {
