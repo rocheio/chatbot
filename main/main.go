@@ -1,9 +1,17 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 )
+
+// normalize returns a string in lowercase with only spaces for whitespace
+func normalize(s string) string {
+	return strings.ToLower(strings.Join(strings.Fields(s), " "))
+}
 
 // Lexicon defines a vocabulary for text structures
 type Lexicon struct {
@@ -29,6 +37,16 @@ func (l Lexicon) IngestString(s string) {
 	}
 }
 
+// IngestReader adds all text from a Reader to this Lexicon
+func (l Lexicon) IngestReader(r io.Reader) {
+	buf := bufio.NewReader(r)
+	sentence, err := buf.ReadString([]byte(".")[0])
+	if err != nil {
+		return
+	}
+	l.IngestString(normalize(sentence))
+}
+
 // SuggestTwoWordFollower returns a following word for two words
 func (l Lexicon) SuggestTwoWordFollower(s string) (string, error) {
 	val, ok := l.twoWordFollowers[s]
@@ -38,4 +56,15 @@ func (l Lexicon) SuggestTwoWordFollower(s string) (string, error) {
 	return val[0], nil
 }
 
-func main() {}
+func main() {
+	r, err := os.Open("data/hhgttg.txt")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	l := NewLexicon()
+	l.IngestReader(r)
+	w, _ := l.SuggestTwoWordFollower("far out")
+	fmt.Println(w)
+}
