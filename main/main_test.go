@@ -1,16 +1,16 @@
 package main
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 )
 
-func TestIngestReader(t *testing.T) {
-	r := strings.NewReader("a b c.")
+func TestOneWordFollower(t *testing.T) {
 	l := NewLexicon()
-	l.IngestReader(r)
-	expected := "c"
-	actual, err := l.SuggestTwoWordFollower("a b")
+	l.IngestString("a b c")
+	expected := "b"
+	actual, err := l.OneWordFollower("a")
 	if err != nil {
 		t.Error(err)
 	}
@@ -20,35 +20,52 @@ func TestIngestReader(t *testing.T) {
 }
 
 func TestTwoWordFollower(t *testing.T) {
-	text := "the quick brown fox jumps over the lazy dog"
-	l := NewLexicon()
-	l.IngestString(text)
-	expected := "brown"
-	actual, err := l.SuggestTwoWordFollower("the quick")
-	if err != nil {
-		t.Error(err)
+	type testcase struct {
+		corpus    string
+		input     string
+		expected  string
+		shouldErr bool
 	}
-	if actual != expected {
-		t.Errorf("expected %s, got %s", expected, actual)
+	testcases := []testcase{
+		testcase{"a b c", "a b", "c", false},
+		testcase{"a b 1", "a b", "1", false},
+		testcase{"w/ Special Chars!", "w special", "chars", false},
+		// should use Max count not First
+		testcase{"a b c a b z a b z", "a b", "z", false},
+		// errors if follower doesn't exist
+		testcase{"", "", "", true},
+		testcase{"a b", "a b", "", true},
+		testcase{"a b", "c d", "", true},
+	}
+	for _, tc := range testcases {
+		l := NewLexicon()
+		l.IngestString(tc.corpus)
+		actual, err := l.TwoWordFollower(tc.input)
+		if err == nil && tc.shouldErr {
+			t.Error("expected error, got nil")
+		} else if err != nil && !tc.shouldErr {
+			t.Error(err)
+		}
+		if actual != tc.expected {
+			t.Errorf("expected '%s', got '%s'", tc.expected, actual)
+		}
 	}
 }
 
-// SuggestTwoWordFollower should return based on most popular
-func TestTwoWorldFollowerMax(t *testing.T) {
+func TestIngestReader(t *testing.T) {
 	r := strings.NewReader(`
-		Foo bar.
-		Foo bar buzz.
-		Foo bar baz.
-		Foo bar baz.
+		a b.
+		a b.
+		a c.
 	`)
 	l := NewLexicon()
 	l.IngestReader(r)
-	expected := "baz"
-	actual, err := l.SuggestTwoWordFollower("foo bar")
-	if err != nil {
-		t.Error(err)
+	expected := map[string]int{
+		"b": 2,
+		"c": 1,
 	}
-	if actual != expected {
-		t.Errorf("expected %s, got %s", expected, actual)
+	actual := l.oneWordFollowers["a"].m
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("expected %v, got %v", expected, actual)
 	}
 }

@@ -18,7 +18,7 @@ func normalize(s string) string {
 func alphanum(s string) string {
 	var clean string
 	for _, r := range s {
-		if unicode.IsLetter(r) {
+		if unicode.IsLetter(r) || unicode.IsNumber(r) || r == ' ' {
 			clean += string(r)
 		}
 	}
@@ -44,7 +44,6 @@ func (t Tally) Size() int {
 func (t Tally) Max() string {
 	key := ""
 	max := 0
-	fmt.Println(t.m)
 	for k, v := range t.m {
 		if v > max {
 			key = k
@@ -61,25 +60,33 @@ func (t Tally) Incr(key string) {
 
 // Lexicon defines a vocabulary for text structures
 type Lexicon struct {
+	oneWordFollowers map[string]*Tally
 	twoWordFollowers map[string]*Tally
 }
 
 // NewLexicon returns a Lexicon ready to ingest data
 func NewLexicon() Lexicon {
 	return Lexicon{
+		oneWordFollowers: make(map[string]*Tally),
 		twoWordFollowers: make(map[string]*Tally),
 	}
 }
 
 // IngestString adds a strings contents to this Lexicon
 func (l Lexicon) IngestString(s string) {
+	s = alphanum(normalize(s))
 	parts := strings.Split(s, " ")
-	if len(parts) < 2 {
-		return
+	for i := 0; i < len(parts)-1; i++ {
+		key := parts[i]
+		val := parts[i+1]
+		if l.oneWordFollowers[key] == nil {
+			l.oneWordFollowers[key] = NewTally()
+		}
+		l.oneWordFollowers[key].Incr(val)
 	}
 	for i := 0; i < len(parts)-2; i++ {
 		key := strings.Join([]string{parts[i], parts[i+1]}, " ")
-		val := alphanum(parts[i+2])
+		val := parts[i+2]
 		if l.twoWordFollowers[key] == nil {
 			l.twoWordFollowers[key] = NewTally()
 		}
@@ -99,15 +106,24 @@ func (l Lexicon) IngestReader(r io.Reader) {
 			fmt.Println(err)
 			continue
 		}
-		l.IngestString(normalize(sentence))
+		l.IngestString(sentence)
 	}
 }
 
-// SuggestTwoWordFollower returns a following word for two words
-func (l Lexicon) SuggestTwoWordFollower(s string) (string, error) {
+// OneWordFollower returns a following word for a single word
+func (l Lexicon) OneWordFollower(s string) (string, error) {
+	tally, ok := l.oneWordFollowers[s]
+	if !ok || tally.Size() == 0 {
+		return "", fmt.Errorf("one word follower not found for %s", s)
+	}
+	return tally.Max(), nil
+}
+
+// TwoWordFollower returns a following word for two words
+func (l Lexicon) TwoWordFollower(s string) (string, error) {
 	tally, ok := l.twoWordFollowers[s]
 	if !ok || tally.Size() == 0 {
-		return "", fmt.Errorf("two word follower not found for %s", s)
+		return "", fmt.Errorf("two word follower not found for '%s'", s)
 	}
 	return tally.Max(), nil
 }
@@ -121,6 +137,8 @@ func main() {
 
 	l := NewLexicon()
 	l.IngestReader(r)
-	w, _ := l.SuggestTwoWordFollower("at a")
+	w, _ := l.OneWordFollower("hello")
+	fmt.Println(w)
+	w, _ = l.TwoWordFollower("at a")
 	fmt.Println(w)
 }
