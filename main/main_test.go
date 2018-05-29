@@ -5,12 +5,12 @@ import (
 	"testing"
 )
 
-func TestTwoWordFollower(t *testing.T) {
-	text := "the quick brown fox jumps over the lazy dog"
+func TestIngestReader(t *testing.T) {
+	r := strings.NewReader("a b c.")
 	l := NewLexicon()
-	l.IngestString(text)
-	expected := "brown"
-	actual, err := l.SuggestTwoWordFollower("the quick")
+	l.IngestReader(r)
+	expected := "c"
+	actual, err := l.SuggestTwoWordFollower("a b")
 	if err != nil {
 		t.Error(err)
 	}
@@ -19,16 +19,12 @@ func TestTwoWordFollower(t *testing.T) {
 	}
 }
 
-func TestIngestReader(t *testing.T) {
-	r := strings.NewReader(`
-		Far out in the uncharted backwaters of the unfashionable
-		end  of the  western  spiral arm  of  the Galaxy lies a
-		small unregarded yellow sun.
-	`)
+func TestTwoWordFollower(t *testing.T) {
+	text := "the quick brown fox jumps over the lazy dog"
 	l := NewLexicon()
-	l.IngestReader(r)
-	expected := "of"
-	actual, err := l.SuggestTwoWordFollower("unfashionable end")
+	l.IngestString(text)
+	expected := "brown"
+	actual, err := l.SuggestTwoWordFollower("the quick")
 	if err != nil {
 		t.Error(err)
 	}
