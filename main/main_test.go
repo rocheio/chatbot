@@ -10,7 +10,7 @@ func TestOneWordFollower(t *testing.T) {
 	l := NewLexicon()
 	l.IngestString("a b c")
 	expected := "b"
-	actual, err := l.OneWordFollower("a")
+	actual, err := l.Follower("a")
 	if err != nil {
 		t.Error(err)
 	}
@@ -40,7 +40,7 @@ func TestTwoWordFollower(t *testing.T) {
 	for _, tc := range testcases {
 		l := NewLexicon()
 		l.IngestString(tc.corpus)
-		actual, err := l.TwoWordFollower(tc.input)
+		actual, err := l.Follower(tc.input)
 		if err == nil && tc.shouldErr {
 			t.Error("expected error, got nil")
 		} else if err != nil && !tc.shouldErr {
@@ -74,7 +74,8 @@ func TestRandomSentence(t *testing.T) {
 	l := NewLexicon()
 	l.IngestString("a b c d e")
 	expected := "A b c d e."
-	actual := l.RandomSentence("a")
+	s := l.RandomSentence("a")
+	actual := s.Formatted()
 	if actual != expected {
 		t.Errorf("expected %s, got %s", expected, actual)
 	}

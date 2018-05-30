@@ -110,51 +110,53 @@ func (l Lexicon) IngestReader(r io.Reader) {
 	}
 }
 
-// OneWordFollower returns a following word for a single word
-func (l Lexicon) OneWordFollower(s string) (string, error) {
-	tally, ok := l.oneWordFollowers[s]
+// Follower returns a following word for a string
+func (l Lexicon) Follower(s string) (string, error) {
+	var tally *Tally
+	var ok bool
+	strLen := len(strings.Split(s, " "))
+	if strLen == 1 {
+		tally, ok = l.oneWordFollowers[s]
+	} else if strLen == 2 {
+		tally, ok = l.twoWordFollowers[s]
+	}
 	if !ok || tally.Size() == 0 {
-		return "", fmt.Errorf("one word follower not found for %s", s)
+		return "", fmt.Errorf("follower not found for '%s'", s)
 	}
 	return tally.Max(), nil
 }
 
-// TwoWordFollower returns a following word for two words
-func (l Lexicon) TwoWordFollower(s string) (string, error) {
-	tally, ok := l.twoWordFollowers[s]
-	if !ok || tally.Size() == 0 {
-		return "", fmt.Errorf("two word follower not found for '%s'", s)
+// TryAllFollowers looks for all permutations of a Sentence for followers.
+// Followers with a match on more words take precedence.
+func (l Lexicon) TryAllFollowers(s Sentence) (string, error) {
+	maxDist := 2
+	if len(s.words) < maxDist {
+		maxDist = len(s.words)
 	}
-	return tally.Max(), nil
+	for i := maxDist; i > 0; i-- {
+		word, err := l.Follower(strings.Join(s.Last(i), " "))
+		if err == nil {
+			return word, nil
+		}
+	}
+	return "", fmt.Errorf("no matches found for sentence %v", s.words)
 }
 
 // RandomSentence returns a sentence from a seed word
-func (l Lexicon) RandomSentence(word string) string {
+func (l Lexicon) RandomSentence(word string) Sentence {
 	s := NewSentence()
-
 	for {
 		err := s.Add(word)
 		if err != nil {
 			break
 		}
 
-		if len(s.words) > 2 {
-			word, err = l.TwoWordFollower(
-				strings.Join(s.Last(2), " "),
-			)
-			if err == nil {
-				continue
-			}
+		word, err = l.TryAllFollowers(s)
+		if err != nil {
+			break
 		}
-
-		word, err = l.OneWordFollower(s.Last(1)[0])
-		if err == nil {
-			continue
-		}
-
-		break
 	}
-	return s.Formatted()
+	return s
 }
 
 // Sentence represents a grammatically correct series of words
@@ -182,6 +184,9 @@ func (s *Sentence) Add(w string) error {
 
 // Last returns the last n words from this Sentence
 func (s *Sentence) Last(n int) []string {
+	if n > len(s.words) {
+		return s.words
+	}
 	return s.words[len(s.words)-n:]
 }
 
@@ -202,5 +207,6 @@ func main() {
 	}
 	l.IngestReader(r)
 
-	fmt.Println(l.RandomSentence("hello"))
+	s := l.RandomSentence("hello")
+	fmt.Println(s.Formatted())
 }
