@@ -9,8 +9,6 @@ import (
 	"unicode"
 )
 
-const maxSentenceLength = 10
-
 // normalize returns a string in lowercase with only spaces for whitespace
 func normalize(s string) string {
 	return strings.ToLower(strings.Join(strings.Fields(s), " "))
@@ -130,35 +128,68 @@ func (l Lexicon) TwoWordFollower(s string) (string, error) {
 	return tally.Max(), nil
 }
 
-// RandomSentence returns a sentence from a seed string
-func (l Lexicon) RandomSentence(seed string) string {
-	var sentence []string
-	var err error
-	word := seed
+// RandomSentence returns a sentence from a seed word
+func (l Lexicon) RandomSentence(word string) string {
+	s := NewSentence()
 
 	for {
-		if len(sentence) == maxSentenceLength {
+		err := s.Add(word)
+		if err != nil {
 			break
 		}
-		sentence = append(sentence, word)
 
-		if len(sentence) > 2 {
+		if len(s.words) > 2 {
 			word, err = l.TwoWordFollower(
-				strings.Join(sentence[len(sentence)-2:], " "),
+				strings.Join(s.Last(2), " "),
 			)
 			if err == nil {
 				continue
 			}
 		}
 
-		word, err = l.OneWordFollower(sentence[len(sentence)-1])
+		word, err = l.OneWordFollower(s.Last(1)[0])
 		if err == nil {
 			continue
 		}
 
 		break
 	}
-	return strings.Join(sentence, " ")
+	return s.Formatted()
+}
+
+// Sentence represents a grammatically correct series of words
+type Sentence struct {
+	words     []string
+	maxLength int
+}
+
+// NewSentence returns a new empty sentence with default requirements
+func NewSentence() Sentence {
+	return Sentence{
+		words:     []string{},
+		maxLength: 10,
+	}
+}
+
+// Add adds a word to this sentence
+func (s *Sentence) Add(w string) error {
+	if len(s.words) > s.maxLength {
+		return fmt.Errorf("sentence is already at maxlength %d", s.maxLength)
+	}
+	s.words = append(s.words, w)
+	return nil
+}
+
+// Last returns the last n words from this Sentence
+func (s *Sentence) Last(n int) []string {
+	return s.words[len(s.words)-n:]
+}
+
+// Formatted returns the sentence as a properly formatted string
+func (s *Sentence) Formatted() string {
+	str := strings.Join(s.words, " ")
+	str = strings.ToUpper(string(str[0])) + str[1:] + "."
+	return str
 }
 
 func main() {

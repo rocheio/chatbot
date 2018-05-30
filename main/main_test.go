@@ -73,7 +73,7 @@ func TestIngestReader(t *testing.T) {
 func TestRandomSentence(t *testing.T) {
 	l := NewLexicon()
 	l.IngestString("a b c d e")
-	expected := "a b c d e"
+	expected := "A b c d e."
 	actual := l.RandomSentence("a")
 	if actual != expected {
 		t.Errorf("expected %s, got %s", expected, actual)
