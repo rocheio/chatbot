@@ -9,6 +9,8 @@ import (
 	"unicode"
 )
 
+const maxSentenceLength = 10
+
 // normalize returns a string in lowercase with only spaces for whitespace
 func normalize(s string) string {
 	return strings.ToLower(strings.Join(strings.Fields(s), " "))
@@ -135,6 +137,9 @@ func (l Lexicon) RandomSentence(seed string) string {
 	word := seed
 
 	for {
+		if len(sentence) == maxSentenceLength {
+			break
+		}
 		sentence = append(sentence, word)
 
 		if len(sentence) > 2 {
