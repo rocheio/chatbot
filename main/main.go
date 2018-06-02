@@ -25,6 +25,16 @@ func alphanum(s string) string {
 	return clean
 }
 
+// Return string with first char made uppercase
+func sentenceCase(s string) string {
+	if len(s) == 0 {
+		return ""
+	} else if len(s) == 1 {
+		return strings.ToUpper(s)
+	}
+	return strings.ToUpper(string(s[0])) + s[1:]
+}
+
 // Tally tracks the count of strings in a corpus
 type Tally struct {
 	m map[string]int
@@ -62,13 +72,19 @@ func (t Tally) Incr(key string) {
 type Lexicon struct {
 	oneWordFollowers map[string]*Tally
 	twoWordFollowers map[string]*Tally
+	subjects         []string
+	verbs            []string
+	predicates       []string
 }
 
-// NewLexicon returns a Lexicon ready to ingest data
+// NewLexicon returns an empty Lexicon ready to ingest data
 func NewLexicon() Lexicon {
 	return Lexicon{
 		oneWordFollowers: make(map[string]*Tally),
 		twoWordFollowers: make(map[string]*Tally),
+		subjects:         make([]string, 0),
+		verbs:            make([]string, 0),
+		predicates:       make([]string, 0),
 	}
 }
 
@@ -159,6 +175,15 @@ func (l Lexicon) RandomSentence(word string) Sentence {
 	return s
 }
 
+// RandomClause returns a random clause
+func (l Lexicon) RandomClause() Clause {
+	return Clause{
+		Subject:   "i",
+		Verb:      "am",
+		Predicate: "a robot",
+	}
+}
+
 // Sentence represents a grammatically correct series of words
 type Sentence struct {
 	words     []string
@@ -192,9 +217,21 @@ func (s *Sentence) Last(n int) []string {
 
 // Formatted returns the sentence as a properly formatted string
 func (s *Sentence) Formatted() string {
-	str := strings.Join(s.words, " ")
-	str = strings.ToUpper(string(str[0])) + str[1:] + "."
-	return str
+	return sentenceCase(strings.Join(s.words, " ")) + "."
+}
+
+// Clause is the smallest grammatical structure for a proposition
+type Clause struct {
+	Subject   string
+	Verb      string
+	Predicate string
+}
+
+// Formatted returns the clause as a single formatted string
+func (c *Clause) Formatted() string {
+	return sentenceCase(
+		fmt.Sprintf("%s %s %s", c.Subject, c.Verb, c.Predicate),
+	) + "."
 }
 
 func main() {
@@ -209,4 +246,7 @@ func main() {
 
 	s := l.RandomSentence("hello")
 	fmt.Println(s.Formatted())
+
+	c := l.RandomClause()
+	fmt.Println(c.Formatted())
 }
