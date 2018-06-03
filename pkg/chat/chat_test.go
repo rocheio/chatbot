@@ -86,7 +86,7 @@ func TestRandomClause(t *testing.T) {
 	l.IngestString("I am a robot")
 	c := l.RandomClause()
 	actual := c.Formatted()
-	expected := "I am a robot."
+	expected := "I am robot."
 	if actual != expected {
 		t.Errorf("expected %s, got %s", expected, actual)
 	}

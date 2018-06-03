@@ -4,13 +4,19 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"math/rand"
 	"strings"
 	"unicode"
 )
 
+var knownSubjects = []string{"i", "you", "he", "she", "it"}
+var knownVerbs = []string{"am", "is", "like", "want"}
+var knownPredicates = []string{"me", "you", "he", "she", "it", "robot"}
+
 // normalize returns a string in lowercase with only spaces for whitespace
 func normalize(s string) string {
-	return strings.ToLower(strings.Join(strings.Fields(s), " "))
+	s = strings.Join(strings.Fields(s), " ")
+	return alphanum(strings.ToLower(s))
 }
 
 // alphanum returns a string with only alphanumeric characters
@@ -32,6 +38,32 @@ func sentenceCase(s string) string {
 		return strings.ToUpper(s)
 	}
 	return strings.ToUpper(string(s[0])) + s[1:]
+}
+
+// Returns true if string is in a slice, false otherwise
+func contains(l []string, s string) bool {
+	for _, item := range l {
+		if s == item {
+			return true
+		}
+	}
+	return false
+}
+
+// randSelection returns a random key from a map
+func randSelection(m map[string]int) string {
+	if len(m) == 0 {
+		return ""
+	}
+	r := rand.Intn(len(m))
+	i := 0
+	for k := range m {
+		if i == r {
+			return k
+		}
+		i++
+	}
+	return ""
 }
 
 // Tally tracks the count of strings in a corpus
@@ -91,7 +123,7 @@ func NewLexicon() Lexicon {
 
 // IngestString adds a strings contents to this Lexicon
 func (l Lexicon) IngestString(s string) {
-	s = alphanum(normalize(s))
+	s = normalize(s)
 	parts := strings.Split(s, " ")
 	for i := 0; i < len(parts)-1; i++ {
 		key := parts[i]
@@ -108,6 +140,17 @@ func (l Lexicon) IngestString(s string) {
 			l.twoWordFollowers[key] = NewTally()
 		}
 		l.twoWordFollowers[key].Incr(val)
+	}
+	for _, p := range parts {
+		if contains(knownSubjects, p) {
+			l.subjects[p]++
+		}
+		if contains(knownVerbs, p) {
+			l.verbs[p]++
+		}
+		if contains(knownPredicates, p) {
+			l.predicates[p]++
+		}
 	}
 }
 
@@ -179,9 +222,9 @@ func (l Lexicon) RandomSentence(word string) Sentence {
 // RandomClause returns a random clause
 func (l Lexicon) RandomClause() Clause {
 	return Clause{
-		Subject:   "i",
-		Verb:      "am",
-		Predicate: "a robot",
+		Subject:   randSelection(l.subjects),
+		Verb:      randSelection(l.verbs),
+		Predicate: randSelection(l.predicates),
 	}
 }
 
