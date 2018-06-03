@@ -9,9 +9,12 @@ import (
 	"unicode"
 )
 
-var knownSubjects = []string{"i", "you", "he", "she", "it"}
-var knownVerbs = []string{"am", "is", "like", "want"}
-var knownPredicates = []string{"me", "you", "he", "she", "it", "robot"}
+var nouns = []string{
+	"i", "you", "he", "she", "me", "it", "robot",
+}
+var verbs = []string{
+	"am", "is", "like", "want", "dislike",
+}
 
 // normalize returns a string in lowercase with only spaces for whitespace
 func normalize(s string) string {
@@ -67,9 +70,17 @@ func (t *Tally) Size() int {
 
 // Max returns the Tally entry with the highest count
 func (t *Tally) Max() string {
+	return t.MaxExclude()
+}
+
+// MaxExclude returns the Tally with the highest count minus given keys
+func (t *Tally) MaxExclude(exclusions ...string) string {
 	key := ""
 	max := 0
 	for k, v := range t.m {
+		if contains(exclusions, k) {
+			continue
+		}
 		if v > max {
 			key = k
 			max = v
@@ -106,9 +117,8 @@ type Lexicon struct {
 	oneWordFollowers map[string]*Tally
 	twoWordFollowers map[string]*Tally
 	// maps for existence of types of words to number of occurances
-	subjects   *Tally
-	verbs      *Tally
-	predicates *Tally
+	nouns *Tally
+	verbs *Tally
 }
 
 // NewLexicon returns an empty Lexicon ready to ingest data
@@ -116,9 +126,8 @@ func NewLexicon() Lexicon {
 	return Lexicon{
 		oneWordFollowers: make(map[string]*Tally),
 		twoWordFollowers: make(map[string]*Tally),
-		subjects:         NewTally(),
+		nouns:            NewTally(),
 		verbs:            NewTally(),
-		predicates:       NewTally(),
 	}
 }
 
@@ -146,22 +155,19 @@ func (l Lexicon) IngestString(s string) {
 	// TODO -- refine this to work with 4-words using `a` / `the`
 	// TODO -- test with large corpuses and add filters for false positives
 	if len(parts) == 3 {
-		l.subjects.Incr(parts[0])
+		l.nouns.Incr(parts[0])
 		l.verbs.Incr(parts[1])
-		l.predicates.Incr(parts[2])
+		l.nouns.Incr(parts[2])
 		return
 	}
 	// hacky way to frontload common words for testing other components
 	// TODO -- get better logic to learn from and ditch this
 	for _, p := range parts {
-		if contains(knownSubjects, p) {
-			l.subjects.Incr(p)
+		if contains(nouns, p) {
+			l.nouns.Incr(p)
 		}
-		if contains(knownVerbs, p) {
+		if contains(verbs, p) {
 			l.verbs.Incr(p)
-		}
-		if contains(knownPredicates, p) {
-			l.predicates.Incr(p)
 		}
 	}
 }
@@ -233,10 +239,13 @@ func (l Lexicon) RandomSentence(word string) Sentence {
 
 // CommonClause returns the most common simple clause in the Lexicon
 func (l Lexicon) CommonClause() Clause {
+	subj := l.nouns.Max()
+	verb := l.verbs.Max()
+	pred := l.nouns.MaxExclude(subj)
 	return Clause{
-		Subject:   l.subjects.Max(),
-		Verb:      l.verbs.Max(),
-		Predicate: l.predicates.Max(),
+		Subject:   subj,
+		Verb:      verb,
+		Predicate: pred,
 	}
 }
 
