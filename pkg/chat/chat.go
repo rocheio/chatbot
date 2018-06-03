@@ -150,14 +150,14 @@ func (l Lexicon) ReadFrom(r io.Reader) (bytesRead int64, err error) {
 	return bytesRead, err
 }
 
-// sentenceSplitFunc provides Scanner logic to parse a sentences at a time
+// sentenceSplitFunc provides Scanner logic to parse one sentence at a time
 func sentenceSplitFunc(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	// Return nothing if at end of file and no data passed
 	if atEOF && len(data) == 0 {
 		return 0, nil, nil
 	}
 
-	// Find index of next sentence ender (period, exclamation, question)
+	// Find index of next sentence ender
 	sentenceEnders := []string{".", "?", "!"}
 	minIndex := -1
 	for _, e := range sentenceEnders {
