@@ -5,17 +5,19 @@ A (work-in-progress, hopefully someday) interactive chat bot written in Go.
 ## Getting Started
 
 ```sh
-# Run unit tests
-go test ./... --cover
-
-# Build the chatbot program
-go build ./cmd/chatbot
-
 # Download Hitchhiker's Guide to the Galaxy for source material
 wget http://www.clearwhitelight.org/hitch/hhgttg.txt -P ./data
 
-# Run the chatbot program
-./chatbot
+# Run unit tests
+go test ./... --cover
+
+# Build and run the chatbot example program
+go build ./cmd/chatbot-example
+./chatbot-example
+
+# Build and run the interactive chatbot program
+go build ./cmd/chatbot
+./chatbot --input="Hello, how are you?"
 ```
 
 ## Downloading Corpuses

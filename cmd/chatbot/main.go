@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -23,22 +24,13 @@ func main() {
 		fmt.Println(err)
 	}
 
-	// Print out a simple Markov chain sentence
-	s := l.RandomSentence("hello")
-	fmt.Println("\nSentence:\n" + s.Formatted() + "\n")
+	// Parse input from command line
+	var seed string
+	flag.StringVar(&seed, "input", "", "Input text for the chatbot")
+	flag.Parse()
 
-	// Print out a simple clause
-	c := l.CommonClause()
-	fmt.Println("Simple Clause:\n" + c.Formatted() + "\n")
-
-	// Print out a progression of unique simple clauses
-	fmt.Println("Progressive Clauses:")
-	var excluded []string
-	for i := 0; i < 5; i++ {
-		c := l.ExclusionClause(excluded)
+	if seed != "" {
+		c := l.CommonClause()
 		fmt.Println(c.Formatted())
-		excluded = append(excluded, c.Subject)
-		excluded = append(excluded, c.Predicate)
-		excluded = append(excluded, c.Verb)
 	}
 }
