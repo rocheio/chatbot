@@ -135,7 +135,6 @@ func (l Lexicon) ReadString(s string) {
 // ReadSentence adds a sentence to this Lexicon
 func (l Lexicon) ReadSentence(s string) {
 	s = normalizeWhitespace(s)
-	fmt.Println("\n", s)
 	l.ReadString(s)
 }
 
@@ -159,7 +158,7 @@ func sentenceSplitFunc(data []byte, atEOF bool) (advance int, token []byte, err 
 	}
 
 	// Find index of next sentence ender (period, exclamation, question)
-	sentenceEnders := []string{".", "?", "!", "\" \"", "' '"}
+	sentenceEnders := []string{".", "?", "!"}
 	minIndex := -1
 	for _, e := range sentenceEnders {
 		i := strings.Index(string(data), e)

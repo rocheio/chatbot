@@ -6,7 +6,7 @@ A (work-in-progress, hopefully someday) interactive chat bot written in Go.
 
 ```sh
 # Run unit tests
-go test ./pkg/chat --cover
+go test ./... --cover
 
 # Build the chatbot program
 go build -o ./chatbot ./cmd/chatbot
