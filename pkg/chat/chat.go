@@ -1,10 +1,9 @@
-package main
+package chat
 
 import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"unicode"
 )
@@ -70,11 +69,13 @@ func (t Tally) Incr(key string) {
 
 // Lexicon defines a vocabulary for text structures
 type Lexicon struct {
+	// maps known chains of words to number of occurances
 	oneWordFollowers map[string]*Tally
 	twoWordFollowers map[string]*Tally
-	subjects         []string
-	verbs            []string
-	predicates       []string
+	// maps for existence of types of words to number of occurances
+	subjects   map[string]int
+	verbs      map[string]int
+	predicates map[string]int
 }
 
 // NewLexicon returns an empty Lexicon ready to ingest data
@@ -82,9 +83,9 @@ func NewLexicon() Lexicon {
 	return Lexicon{
 		oneWordFollowers: make(map[string]*Tally),
 		twoWordFollowers: make(map[string]*Tally),
-		subjects:         make([]string, 0),
-		verbs:            make([]string, 0),
-		predicates:       make([]string, 0),
+		subjects:         make(map[string]int),
+		verbs:            make(map[string]int),
+		predicates:       make(map[string]int),
 	}
 }
 
@@ -232,21 +233,4 @@ func (c *Clause) Formatted() string {
 	return sentenceCase(
 		fmt.Sprintf("%s %s %s", c.Subject, c.Verb, c.Predicate),
 	) + "."
-}
-
-func main() {
-	l := NewLexicon()
-
-	r, err := os.Open("data/hhgttg.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	l.IngestReader(r)
-
-	s := l.RandomSentence("hello")
-	fmt.Println(s.Formatted())
-
-	c := l.RandomClause()
-	fmt.Println(c.Formatted())
 }

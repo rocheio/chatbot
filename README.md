@@ -6,10 +6,10 @@ A (work-in-progress, hopefully someday) interactive chat bot written in Go.
 
 ```sh
 # Run unit tests
-go test ./main/ --cover
+go test ./pkg/chat --cover
 
 # Build the chatbot program
-go build -o ./chatbot ./main/
+go build -o ./chatbot ./cmd/chatbot
 
 # Download Hitchhiker's Guide to the Galaxy for source material
 wget http://www.clearwhitelight.org/hitch/hhgttg.txt -P ./data

@@ -1,4 +1,4 @@
-package main
+package chat
 
 import (
 	"reflect"
@@ -73,9 +73,20 @@ func TestIngestReader(t *testing.T) {
 func TestRandomSentence(t *testing.T) {
 	l := NewLexicon()
 	l.IngestString("a b c d e")
-	expected := "A b c d e."
 	s := l.RandomSentence("a")
 	actual := s.Formatted()
+	expected := "A b c d e."
+	if actual != expected {
+		t.Errorf("expected %s, got %s", expected, actual)
+	}
+}
+
+func TestRandomClause(t *testing.T) {
+	l := NewLexicon()
+	l.IngestString("I am a robot")
+	c := l.RandomClause()
+	actual := c.Formatted()
+	expected := "I am a robot."
 	if actual != expected {
 		t.Errorf("expected %s, got %s", expected, actual)
 	}
