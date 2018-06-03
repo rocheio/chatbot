@@ -81,13 +81,22 @@ func TestRandomSentence(t *testing.T) {
 	}
 }
 
-func TestRandomClause(t *testing.T) {
-	l := NewLexicon()
-	l.IngestString("I am a robot")
-	c := l.RandomClause()
-	actual := c.Formatted()
-	expected := "I am robot."
-	if actual != expected {
-		t.Errorf("expected %s, got %s", expected, actual)
+func TestCommonClause(t *testing.T) {
+	type testcase struct {
+		lex      string
+		expected string
+	}
+	testcases := []testcase{
+		testcase{"I am robot", "I am robot."},
+		testcase{"what is uniquestring", "What is uniquestring."},
+	}
+	for _, tc := range testcases {
+		l := NewLexicon()
+		l.IngestString(tc.lex)
+		c := l.CommonClause()
+		actual := c.Formatted()
+		if actual != tc.expected {
+			t.Errorf("expected %s, got %s", tc.expected, actual)
+		}
 	}
 }

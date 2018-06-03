@@ -20,6 +20,6 @@ func main() {
 	s := l.RandomSentence("hello")
 	fmt.Println(s.Formatted())
 
-	c := l.RandomClause()
+	c := l.CommonClause()
 	fmt.Println(c.Formatted())
 }

@@ -50,22 +50,6 @@ func contains(l []string, s string) bool {
 	return false
 }
 
-// randSelection returns a random key from a map
-func randSelection(m map[string]int) string {
-	if len(m) == 0 {
-		return ""
-	}
-	r := rand.Intn(len(m))
-	i := 0
-	for k := range m {
-		if i == r {
-			return k
-		}
-		i++
-	}
-	return ""
-}
-
 // Tally tracks the count of strings in a corpus
 type Tally struct {
 	m map[string]int
@@ -77,12 +61,12 @@ func NewTally() *Tally {
 }
 
 // Size returns the number of entries in this Tally
-func (t Tally) Size() int {
+func (t *Tally) Size() int {
 	return len(t.m)
 }
 
 // Max returns the Tally entry with the highest count
-func (t Tally) Max() string {
+func (t *Tally) Max() string {
 	key := ""
 	max := 0
 	for k, v := range t.m {
@@ -95,8 +79,25 @@ func (t Tally) Max() string {
 }
 
 // Incr increases the value of a Tally entry
-func (t Tally) Incr(key string) {
+func (t *Tally) Incr(key string) {
 	t.m[key]++
+}
+
+// RandKey returns a random key from the Tally
+func (t *Tally) RandKey() string {
+	fmt.Println(t.m)
+	if len(t.m) == 0 {
+		return ""
+	}
+	r := rand.Intn(len(t.m))
+	i := 0
+	for k := range t.m {
+		if i == r {
+			return k
+		}
+		i++
+	}
+	return ""
 }
 
 // Lexicon defines a vocabulary for text structures
@@ -105,9 +106,9 @@ type Lexicon struct {
 	oneWordFollowers map[string]*Tally
 	twoWordFollowers map[string]*Tally
 	// maps for existence of types of words to number of occurances
-	subjects   map[string]int
-	verbs      map[string]int
-	predicates map[string]int
+	subjects   *Tally
+	verbs      *Tally
+	predicates *Tally
 }
 
 // NewLexicon returns an empty Lexicon ready to ingest data
@@ -115,9 +116,9 @@ func NewLexicon() Lexicon {
 	return Lexicon{
 		oneWordFollowers: make(map[string]*Tally),
 		twoWordFollowers: make(map[string]*Tally),
-		subjects:         make(map[string]int),
-		verbs:            make(map[string]int),
-		predicates:       make(map[string]int),
+		subjects:         NewTally(),
+		verbs:            NewTally(),
+		predicates:       NewTally(),
 	}
 }
 
@@ -141,15 +142,26 @@ func (l Lexicon) IngestString(s string) {
 		}
 		l.twoWordFollowers[key].Incr(val)
 	}
+	// Assume all three word sentences are simple clauses
+	// TODO -- refine this to work with 4-words using `a` / `the`
+	// TODO -- test with large corpuses and add filters for false positives
+	if len(parts) == 3 {
+		l.subjects.Incr(parts[0])
+		l.verbs.Incr(parts[1])
+		l.predicates.Incr(parts[2])
+		return
+	}
+	// hacky way to frontload common words for testing other components
+	// TODO -- get better logic to learn from and ditch this
 	for _, p := range parts {
 		if contains(knownSubjects, p) {
-			l.subjects[p]++
+			l.subjects.Incr(p)
 		}
 		if contains(knownVerbs, p) {
-			l.verbs[p]++
+			l.verbs.Incr(p)
 		}
 		if contains(knownPredicates, p) {
-			l.predicates[p]++
+			l.predicates.Incr(p)
 		}
 	}
 }
@@ -219,12 +231,12 @@ func (l Lexicon) RandomSentence(word string) Sentence {
 	return s
 }
 
-// RandomClause returns a random clause
-func (l Lexicon) RandomClause() Clause {
+// CommonClause returns the most common simple clause in the Lexicon
+func (l Lexicon) CommonClause() Clause {
 	return Clause{
-		Subject:   randSelection(l.subjects),
-		Verb:      randSelection(l.verbs),
-		Predicate: randSelection(l.predicates),
+		Subject:   l.subjects.Max(),
+		Verb:      l.verbs.Max(),
+		Predicate: l.predicates.Max(),
 	}
 }
 
