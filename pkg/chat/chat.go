@@ -11,16 +11,14 @@ import (
 )
 
 var definiteArticle = "the"
+var negativeArticle = "no"
 var indefiniteArticles = []string{"a", "an", "some"}
 var nouns = []string{"me", "you", "he", "she", "it"}
 var verbs = []string{"am", "is", "was", "has", "wants"}
 
-// normalize returns a string in lowercase with only single spaces
-func normalize(s string) string {
-	s = strings.Join(strings.Fields(s), " ")
-	s = alphanum(strings.ToLower(s))
-	s = strings.Join(strings.Fields(s), " ")
-	return s
+// normalizeWhitespace returns a string separated by only single spaces
+func normalizeWhitespace(s string) string {
+	return strings.TrimSpace(strings.Join(strings.Fields(s), " "))
 }
 
 // alphanum returns a string with only alphanumeric characters
@@ -86,7 +84,7 @@ func NewLexicon() Lexicon {
 
 // IngestString adds a strings contents to this Lexicon
 func (l Lexicon) IngestString(s string) {
-	s = normalize(s)
+	s = alphanum(strings.ToLower(s))
 	parts := strings.Split(s, " ")
 	for i := 0; i < len(parts)-1; i++ {
 		key := parts[i]
@@ -107,7 +105,9 @@ func (l Lexicon) IngestString(s string) {
 	// Strip articles to find potential simple clauses
 	if len(parts) >= 3 && len(parts) <= 5 {
 		for _, p := range parts {
-			if p == definiteArticle || contains(indefiniteArticles, p) {
+			if p == definiteArticle ||
+				p == negativeArticle ||
+				contains(indefiniteArticles, p) {
 				parts = removeStr(parts, p)
 			}
 		}
@@ -132,6 +132,12 @@ func (l Lexicon) IngestString(s string) {
 	}
 }
 
+// IngestSentence adds a sentence to this Lexicon
+func (l Lexicon) IngestSentence(s string) {
+	s = normalizeWhitespace(s)
+	l.IngestString(s)
+}
+
 // IngestReader adds all text from a Reader to this Lexicon
 func (l Lexicon) IngestReader(r io.Reader) {
 	buf := bufio.NewReader(r)
@@ -144,7 +150,7 @@ func (l Lexicon) IngestReader(r io.Reader) {
 			fmt.Println(err)
 			continue
 		}
-		l.IngestString(sentence)
+		l.IngestSentence(sentence)
 	}
 }
 
