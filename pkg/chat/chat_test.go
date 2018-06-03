@@ -100,3 +100,13 @@ func TestCommonClause(t *testing.T) {
 		}
 	}
 }
+
+func TestRandKey(t *testing.T) {
+	tally := NewTally()
+	tally.Incr("a")
+	expected := "a"
+	actual := tally.RandKey()
+	if actual != expected {
+		t.Errorf("expected %s, got %s", expected, actual)
+	}
+}
