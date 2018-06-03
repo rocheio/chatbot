@@ -8,7 +8,7 @@ import (
 
 func TestOneWordFollower(t *testing.T) {
 	l := NewLexicon()
-	l.IngestString("a b c")
+	l.ReadString("a b c")
 	expected := "b"
 	actual, err := l.Follower("a")
 	if err != nil {
@@ -39,7 +39,7 @@ func TestTwoWordFollower(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		l := NewLexicon()
-		l.IngestString(tc.corpus)
+		l.ReadString(tc.corpus)
 		actual, err := l.Follower(tc.input)
 		if err == nil && tc.shouldErr {
 			t.Error("expected error, got nil")
@@ -52,14 +52,14 @@ func TestTwoWordFollower(t *testing.T) {
 	}
 }
 
-func TestIngestReader(t *testing.T) {
+func TestReadReader(t *testing.T) {
 	r := strings.NewReader(`
 		a b.
 		a b.
 		a c.
 	`)
 	l := NewLexicon()
-	l.IngestReader(r)
+	l.ReadReader(r)
 	expected := "b"
 	actual := l.oneWordFollowers["a"].Max()
 	if !reflect.DeepEqual(actual, expected) {
@@ -69,7 +69,7 @@ func TestIngestReader(t *testing.T) {
 
 func TestRandomSentence(t *testing.T) {
 	l := NewLexicon()
-	l.IngestString("a b c d e")
+	l.ReadString("a b c d e")
 	s := l.RandomSentence("a")
 	actual := s.Formatted()
 	expected := "A b c d e."
@@ -89,7 +89,7 @@ func TestCommonClause(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		l := NewLexicon()
-		l.IngestString(tc.lex)
+		l.ReadString(tc.lex)
 		c := l.CommonClause()
 		actual := c.Formatted()
 		if actual != tc.expected {

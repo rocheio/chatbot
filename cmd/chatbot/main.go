@@ -15,7 +15,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	l.IngestReader(r)
+	l.ReadReader(r)
 
 	// Print out a simple Markov chain sentence
 	s := l.RandomSentence("hello")

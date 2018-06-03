@@ -82,8 +82,8 @@ func NewLexicon() Lexicon {
 	}
 }
 
-// IngestString adds a strings contents to this Lexicon
-func (l Lexicon) IngestString(s string) {
+// ReadString adds a strings contents to this Lexicon
+func (l Lexicon) ReadString(s string) {
 	s = alphanum(strings.ToLower(s))
 	parts := strings.Split(s, " ")
 	for i := 0; i < len(parts)-1; i++ {
@@ -132,14 +132,15 @@ func (l Lexicon) IngestString(s string) {
 	}
 }
 
-// IngestSentence adds a sentence to this Lexicon
-func (l Lexicon) IngestSentence(s string) {
+// ReadSentence adds a sentence to this Lexicon
+func (l Lexicon) ReadSentence(s string) {
 	s = normalizeWhitespace(s)
-	l.IngestString(s)
+	fmt.Println("\n", s)
+	l.ReadString(s)
 }
 
-// IngestReader adds all text from a Reader to this Lexicon
-func (l Lexicon) IngestReader(r io.Reader) {
+// ReadReader adds all text from a Reader to this Lexicon
+func (l Lexicon) ReadReader(r io.Reader) {
 	buf := bufio.NewReader(r)
 	for {
 		sentence, err := buf.ReadString([]byte(".")[0])
@@ -150,7 +151,7 @@ func (l Lexicon) IngestReader(r io.Reader) {
 			fmt.Println(err)
 			continue
 		}
-		l.IngestSentence(sentence)
+		l.ReadSentence(sentence)
 	}
 }
 
