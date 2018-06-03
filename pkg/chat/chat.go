@@ -10,14 +10,10 @@ import (
 	"github.com/rocheio/chatbot/pkg/tally"
 )
 
-var nouns = []string{
-	"i", "you", "he", "she", "me", "it", "robot",
-}
-var verbs = []string{
-	"am", "is", "like", "want", "dislike",
-}
 var definiteArticle = "the"
 var indefiniteArticles = []string{"a", "an", "some"}
+var nouns = []string{"me", "you", "he", "she", "it"}
+var verbs = []string{"am", "is", "was", "has", "wants"}
 
 // normalize returns a string in lowercase with only single spaces
 func normalize(s string) string {
@@ -109,7 +105,7 @@ func (l Lexicon) IngestString(s string) {
 		l.twoWordFollowers[key].Incr(val)
 	}
 	// Strip articles to find potential simple clauses
-	if len(parts) == 4 {
+	if len(parts) >= 3 && len(parts) <= 5 {
 		for _, p := range parts {
 			if p == definiteArticle || contains(indefiniteArticles, p) {
 				parts = removeStr(parts, p)
