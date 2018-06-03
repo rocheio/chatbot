@@ -19,10 +19,12 @@ var verbs = []string{
 var definiteArticle = "the"
 var indefiniteArticles = []string{"a", "an", "some"}
 
-// normalize returns a string in lowercase with only spaces for whitespace
+// normalize returns a string in lowercase with only single spaces
 func normalize(s string) string {
 	s = strings.Join(strings.Fields(s), " ")
-	return alphanum(strings.ToLower(s))
+	s = alphanum(strings.ToLower(s))
+	s = strings.Join(strings.Fields(s), " ")
+	return s
 }
 
 // alphanum returns a string with only alphanumeric characters
@@ -54,6 +56,16 @@ func contains(l []string, s string) bool {
 		}
 	}
 	return false
+}
+
+// Removes a string from a slice
+func removeStr(l []string, s string) []string {
+	for i, val := range l {
+		if val == s {
+			return append(l[:i], l[i+1:]...)
+		}
+	}
+	return l
 }
 
 // Lexicon defines a vocabulary for text structures
@@ -96,8 +108,15 @@ func (l Lexicon) IngestString(s string) {
 		}
 		l.twoWordFollowers[key].Incr(val)
 	}
-	// Assume all three word sentences are simple clauses
-	// TODO -- refine this to work with 4-words using `a` / `the`
+	// Strip articles to find potential simple clauses
+	if len(parts) == 4 {
+		for _, p := range parts {
+			if p == definiteArticle || contains(indefiniteArticles, p) {
+				parts = removeStr(parts, p)
+			}
+		}
+	}
+	// Assume all 3 word sentences at this point are simple clauses
 	// TODO -- test with large corpuses and add filters for false positives
 	if len(parts) == 3 {
 		l.nouns.Incr(parts[0])
