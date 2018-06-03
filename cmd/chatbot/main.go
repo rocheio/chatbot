@@ -15,7 +15,13 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	l.ReadReader(r)
+	bytesRead, err := l.ReadFrom(r)
+	if bytesRead == 0 {
+		fmt.Println("zero bytes read")
+	}
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	// Print out a simple Markov chain sentence
 	s := l.RandomSentence("hello")

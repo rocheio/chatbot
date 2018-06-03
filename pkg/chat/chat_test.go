@@ -52,14 +52,20 @@ func TestTwoWordFollower(t *testing.T) {
 	}
 }
 
-func TestReadReader(t *testing.T) {
+func TestReadFrom(t *testing.T) {
 	r := strings.NewReader(`
 		a b.
 		a b.
 		a c.
 	`)
 	l := NewLexicon()
-	l.ReadReader(r)
+	bytesRead, err := l.ReadFrom(r)
+	if bytesRead == 0 {
+		t.Error("zero bytes read")
+	}
+	if err != nil {
+		t.Error(err)
+	}
 	expected := "b"
 	actual := l.oneWordFollowers["a"].Max()
 	if !reflect.DeepEqual(actual, expected) {

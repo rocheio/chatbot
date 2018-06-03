@@ -139,20 +139,51 @@ func (l Lexicon) ReadSentence(s string) {
 	l.ReadString(s)
 }
 
-// ReadReader adds all text from a Reader to this Lexicon
-func (l Lexicon) ReadReader(r io.Reader) {
-	buf := bufio.NewReader(r)
-	for {
-		sentence, err := buf.ReadString([]byte(".")[0])
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		l.ReadSentence(sentence)
+// ReadFrom adds all text from a Reader to this Lexicon
+func (l Lexicon) ReadFrom(r io.Reader) (bytesRead int64, err error) {
+	scan := bufio.NewScanner(r)
+	scan.Split(sentenceSplitFunc)
+	for scan.Scan() {
+		b := scan.Bytes()
+		bytesRead += int64(len(b))
+		l.ReadSentence(string(b))
 	}
+	return bytesRead, err
+}
+
+// sentenceSplitFunc provides Scanner logic to parse a sentences at a time
+func sentenceSplitFunc(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	// Return nothing if at end of file and no data passed
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+
+	// Find index of next sentence ender (period, exclamation, question)
+	sentenceEnders := []string{".", "?", "!", "\" \"", "' '"}
+	minIndex := -1
+	for _, e := range sentenceEnders {
+		i := strings.Index(string(data), e)
+		if i > 0 && i < minIndex {
+			minIndex = i
+		}
+	}
+
+	// Return index to advance at each period
+	if i := strings.Index(string(data), "."); i >= 0 {
+		// If period is immediately followed by a quote, include in sentence
+		followChar := string(string(data)[i+1])
+		if followChar == "'" || followChar == "\"" {
+			return i + 2, data[0 : i+2], nil
+		}
+		return i + 1, data[0 : i+1], nil
+	}
+
+	// If at end of file with data return the data
+	if atEOF {
+		return len(data), data, nil
+	}
+
+	return
 }
 
 // Follower returns a following word for a string
