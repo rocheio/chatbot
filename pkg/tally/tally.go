@@ -75,3 +75,12 @@ func (t *Tally) RandKey() string {
 	}
 	return ""
 }
+
+// PrintOver writes entries in Tally over n to stdout
+func (t *Tally) PrintOver(n int) {
+	for k, v := range t.m {
+		if v >= n {
+			fmt.Println(k, v)
+		}
+	}
+}
