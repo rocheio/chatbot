@@ -16,6 +16,8 @@ var nouns = []string{
 var verbs = []string{
 	"am", "is", "like", "want", "dislike",
 }
+var definiteArticle = "the"
+var indefiniteArticles = []string{"a", "an", "some"}
 
 // normalize returns a string in lowercase with only spaces for whitespace
 func normalize(s string) string {
@@ -180,11 +182,17 @@ func (l Lexicon) RandomSentence(word string) Sentence {
 	return s
 }
 
-// CommonClause returns the most common simple clause in the Lexicon
+// CommonClause returns the most common simple clause in l
 func (l Lexicon) CommonClause() Clause {
-	subj := l.nouns.Max()
-	verb := l.verbs.Max()
-	pred := l.nouns.MaxExclude(subj)
+	return l.ExclusionClause(nil)
+}
+
+// ExclusionClause returns a simple clause from l with items excluded
+func (l Lexicon) ExclusionClause(excluded []string) Clause {
+	subj := l.nouns.MaxExclude(excluded...)
+	excluded = append(excluded, subj)
+	verb := l.verbs.MaxExclude(excluded...)
+	pred := l.nouns.MaxExclude(excluded...)
 	return Clause{
 		Subject:   subj,
 		Verb:      verb,

@@ -53,6 +53,9 @@ func (t *Tally) MaxExclude(exclusions ...string) string {
 
 // Incr increases the value of a Tally entry
 func (t *Tally) Incr(key string) {
+	if key == "" {
+		return
+	}
 	t.m[key]++
 }
 
