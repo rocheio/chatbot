@@ -4,9 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"math/rand"
 	"strings"
 	"unicode"
+
+	"github.com/rocheio/chatbot/pkg/tally"
 )
 
 var nouns = []string{
@@ -53,81 +54,23 @@ func contains(l []string, s string) bool {
 	return false
 }
 
-// Tally tracks the count of strings in a corpus
-type Tally struct {
-	m map[string]int
-}
-
-// NewTally returns a Tally ready to count strings
-func NewTally() *Tally {
-	return &Tally{make(map[string]int)}
-}
-
-// Size returns the number of entries in this Tally
-func (t *Tally) Size() int {
-	return len(t.m)
-}
-
-// Max returns the Tally entry with the highest count
-func (t *Tally) Max() string {
-	return t.MaxExclude()
-}
-
-// MaxExclude returns the Tally with the highest count minus given keys
-func (t *Tally) MaxExclude(exclusions ...string) string {
-	key := ""
-	max := 0
-	for k, v := range t.m {
-		if contains(exclusions, k) {
-			continue
-		}
-		if v > max {
-			key = k
-			max = v
-		}
-	}
-	return key
-}
-
-// Incr increases the value of a Tally entry
-func (t *Tally) Incr(key string) {
-	t.m[key]++
-}
-
-// RandKey returns a random key from the Tally
-func (t *Tally) RandKey() string {
-	fmt.Println(t.m)
-	if len(t.m) == 0 {
-		return ""
-	}
-	r := rand.Intn(len(t.m))
-	i := 0
-	for k := range t.m {
-		if i == r {
-			return k
-		}
-		i++
-	}
-	return ""
-}
-
 // Lexicon defines a vocabulary for text structures
 type Lexicon struct {
 	// maps known chains of words to number of occurances
-	oneWordFollowers map[string]*Tally
-	twoWordFollowers map[string]*Tally
+	oneWordFollowers map[string]*tally.Tally
+	twoWordFollowers map[string]*tally.Tally
 	// maps for existence of types of words to number of occurances
-	nouns *Tally
-	verbs *Tally
+	nouns *tally.Tally
+	verbs *tally.Tally
 }
 
 // NewLexicon returns an empty Lexicon ready to ingest data
 func NewLexicon() Lexicon {
 	return Lexicon{
-		oneWordFollowers: make(map[string]*Tally),
-		twoWordFollowers: make(map[string]*Tally),
-		nouns:            NewTally(),
-		verbs:            NewTally(),
+		oneWordFollowers: make(map[string]*tally.Tally),
+		twoWordFollowers: make(map[string]*tally.Tally),
+		nouns:            tally.New(),
+		verbs:            tally.New(),
 	}
 }
 
@@ -139,7 +82,7 @@ func (l Lexicon) IngestString(s string) {
 		key := parts[i]
 		val := parts[i+1]
 		if l.oneWordFollowers[key] == nil {
-			l.oneWordFollowers[key] = NewTally()
+			l.oneWordFollowers[key] = tally.New()
 		}
 		l.oneWordFollowers[key].Incr(val)
 	}
@@ -147,7 +90,7 @@ func (l Lexicon) IngestString(s string) {
 		key := strings.Join([]string{parts[i], parts[i+1]}, " ")
 		val := parts[i+2]
 		if l.twoWordFollowers[key] == nil {
-			l.twoWordFollowers[key] = NewTally()
+			l.twoWordFollowers[key] = tally.New()
 		}
 		l.twoWordFollowers[key].Incr(val)
 	}
@@ -190,18 +133,18 @@ func (l Lexicon) IngestReader(r io.Reader) {
 
 // Follower returns a following word for a string
 func (l Lexicon) Follower(s string) (string, error) {
-	var tally *Tally
+	var t *tally.Tally
 	var ok bool
 	strLen := len(strings.Split(s, " "))
 	if strLen == 1 {
-		tally, ok = l.oneWordFollowers[s]
+		t, ok = l.oneWordFollowers[s]
 	} else if strLen == 2 {
-		tally, ok = l.twoWordFollowers[s]
+		t, ok = l.twoWordFollowers[s]
 	}
-	if !ok || tally.Size() == 0 {
+	if !ok || t.Size() == 0 {
 		return "", fmt.Errorf("follower not found for '%s'", s)
 	}
-	return tally.Max(), nil
+	return t.Max(), nil
 }
 
 // TryAllFollowers looks for all permutations of a Sentence for followers.

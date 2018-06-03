@@ -60,11 +60,8 @@ func TestIngestReader(t *testing.T) {
 	`)
 	l := NewLexicon()
 	l.IngestReader(r)
-	expected := map[string]int{
-		"b": 2,
-		"c": 1,
-	}
-	actual := l.oneWordFollowers["a"].m
+	expected := "b"
+	actual := l.oneWordFollowers["a"].Max()
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("expected %v, got %v", expected, actual)
 	}
@@ -98,15 +95,5 @@ func TestCommonClause(t *testing.T) {
 		if actual != tc.expected {
 			t.Errorf("expected %s, got %s", tc.expected, actual)
 		}
-	}
-}
-
-func TestRandKey(t *testing.T) {
-	tally := NewTally()
-	tally.Incr("a")
-	expected := "a"
-	actual := tally.RandKey()
-	if actual != expected {
-		t.Errorf("expected %s, got %s", expected, actual)
 	}
 }
