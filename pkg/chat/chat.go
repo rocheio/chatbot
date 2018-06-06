@@ -8,9 +8,9 @@ import (
 )
 
 // FromInput prints out a response to an input string
-func FromInput(s string) error {
+func FromInput(input string) error {
 	// Build a lexicon from Hitchiker's Guide to the Galaxy
-	l := lexicon.NewLexicon()
+	l := lexicon.New()
 	r, err := os.Open("data/hhgttg.txt")
 	if err != nil {
 		return err

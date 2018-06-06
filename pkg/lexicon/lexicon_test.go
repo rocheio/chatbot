@@ -7,7 +7,7 @@ import (
 )
 
 func TestOneWordFollower(t *testing.T) {
-	l := NewLexicon()
+	l := New()
 	l.ReadString("a b c")
 	expected := "b"
 	actual, err := l.Follower("a")
@@ -38,7 +38,7 @@ func TestTwoWordFollower(t *testing.T) {
 		testcase{"a b", "c d", "", true},
 	}
 	for _, tc := range testcases {
-		l := NewLexicon()
+		l := New()
 		l.ReadString(tc.corpus)
 		actual, err := l.Follower(tc.input)
 		if err == nil && tc.shouldErr {
@@ -58,7 +58,7 @@ func TestReadFrom(t *testing.T) {
 		a b.
 		a c.
 	`)
-	l := NewLexicon()
+	l := New()
 	bytesRead, err := l.ReadFrom(r)
 	if bytesRead == 0 {
 		t.Error("zero bytes read")
@@ -74,7 +74,7 @@ func TestReadFrom(t *testing.T) {
 }
 
 func TestRandomSentence(t *testing.T) {
-	l := NewLexicon()
+	l := New()
 	l.ReadString("a b c d e")
 	s := l.RandomSentence("a")
 	actual := s.Formatted()
@@ -94,7 +94,7 @@ func TestCommonClause(t *testing.T) {
 		testcase{"what is uniquestring", "What is uniquestring."},
 	}
 	for _, tc := range testcases {
-		l := NewLexicon()
+		l := New()
 		l.ReadString(tc.lex)
 		c := l.CommonClause()
 		actual := c.Formatted()

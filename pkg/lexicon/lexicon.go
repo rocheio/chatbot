@@ -73,8 +73,8 @@ type Lexicon struct {
 	verbs *tally.Tally
 }
 
-// NewLexicon returns an empty Lexicon ready to ingest data
-func NewLexicon() Lexicon {
+// New returns an empty Lexicon ready to ingest data
+func New() Lexicon {
 	return Lexicon{
 		oneWordFollowers: make(map[string]*tally.Tally),
 		twoWordFollowers: make(map[string]*tally.Tally),
