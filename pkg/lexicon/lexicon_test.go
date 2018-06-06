@@ -1,4 +1,4 @@
-package chat
+package lexicon
 
 import (
 	"reflect"
