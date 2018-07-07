@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/rocheio/chatbot/pkg/chat"
 )
@@ -15,7 +16,10 @@ func main() {
 	flag.Parse()
 
 	if interactive {
-		chat.Interactive()
+		err := chat.Interactive()
+		if err != nil {
+			fmt.Println("error:", err)
+		}
 		return
 	}
 

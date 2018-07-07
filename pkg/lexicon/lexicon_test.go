@@ -77,7 +77,7 @@ func TestRandomSentence(t *testing.T) {
 	l := New()
 	l.ReadString("a b c d e")
 	s := l.RandomSentence("a")
-	actual := s.Formatted()
+	actual := s.String()
 	expected := "A b c d e."
 	if actual != expected {
 		t.Errorf("expected %s, got %s", expected, actual)
@@ -97,7 +97,7 @@ func TestCommonClause(t *testing.T) {
 		l := New()
 		l.ReadString(tc.lex)
 		c := l.CommonClause()
-		actual := c.Formatted()
+		actual := c.String()
 		if actual != tc.expected {
 			t.Errorf("expected %s, got %s", tc.expected, actual)
 		}

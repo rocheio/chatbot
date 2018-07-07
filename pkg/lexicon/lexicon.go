@@ -298,8 +298,8 @@ func (s *Sentence) Last(n int) []string {
 	return s.words[len(s.words)-n:]
 }
 
-// Formatted returns the sentence as a properly formatted string
-func (s *Sentence) Formatted() string {
+// String returns the sentence as a properly formatted string
+func (s Sentence) String() string {
 	return sentenceCase(strings.Join(s.words, " ")) + "."
 }
 
@@ -310,8 +310,8 @@ type Clause struct {
 	Predicate string
 }
 
-// Formatted returns the clause as a single formatted string
-func (c *Clause) Formatted() string {
+// String returns the clause as a single formatted string
+func (c Clause) String() string {
 	return sentenceCase(
 		fmt.Sprintf("%s %s %s", c.Subject, c.Verb, c.Predicate),
 	) + "."
