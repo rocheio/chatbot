@@ -28,7 +28,7 @@ func (c *Chat) Add(speaker, text string) {
 // Greet prints a greeting to stdout
 func (c *Chat) Greet() {
 	speaker := "chatbot"
-	greeting := "hello"
+	greeting := c.lex.RandomGreeting()
 	c.Add(speaker, greeting)
 	fmt.Printf("%s: %s\n", speaker, greeting)
 }

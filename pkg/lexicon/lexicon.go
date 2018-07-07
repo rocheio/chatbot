@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"math/rand"
 	"strings"
 	"unicode"
 
@@ -15,7 +16,7 @@ var negativeArticle = "no"
 var indefiniteArticles = []string{"a", "an", "some"}
 var nouns = []string{"me", "you", "he", "she", "it"}
 var verbs = []string{"am", "is", "was", "has", "wants"}
-var greetings = []string{"hello", "hi", "hey"}
+var greetings = []string{"hello", "hi", "hey", "howdy"}
 
 // normalizeWhitespace returns a string separated by only single spaces
 func normalizeWhitespace(s string) string {
@@ -259,6 +260,11 @@ func (l Lexicon) IsGreeting(s string) bool {
 		return true
 	}
 	return false
+}
+
+// RandomGreeting returns a random greeting from Lexicon
+func (l Lexicon) RandomGreeting() string {
+	return greetings[rand.Intn(len(greetings))]
 }
 
 // Sentence represents a grammatically correct series of words
