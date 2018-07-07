@@ -21,7 +21,7 @@ func New() Chat {
 }
 
 // BuildLexicon builds the chatbot's starting lexicon
-func (c Chat) BuildLexicon() error {
+func (c *Chat) BuildLexicon() error {
 	r, err := os.Open("./data/hhgttg.txt")
 	if err != nil {
 		return err
@@ -57,24 +57,8 @@ func (c *Chat) Respond(input string) {
 	c.Add(speaker, response)
 }
 
-// Message is a one-direction piece of communication
-type Message struct {
-	text    string
-	speaker string
-}
-
-func (m Message) String() string {
-	return fmt.Sprintf("%s: %s", m.speaker, m.text)
-}
-
 // Interactive creates an interactive chat session with a bot
-func Interactive() error {
-	c := New()
-	err := c.BuildLexicon()
-	if err != nil {
-		return err
-	}
-
+func (c *Chat) Interactive() error {
 	fmt.Println("Starting chat session... (`exit` to exit)")
 	c.Greet()
 	fmt.Print("you: ")
@@ -96,4 +80,14 @@ func Interactive() error {
 
 	fmt.Printf("saved text: %s\n", c.Messages)
 	return nil
+}
+
+// Message is a one-direction piece of communication
+type Message struct {
+	text    string
+	speaker string
+}
+
+func (m Message) String() string {
+	return fmt.Sprintf("%s: %s", m.speaker, m.text)
 }

@@ -16,7 +16,12 @@ func main() {
 	flag.Parse()
 
 	if interactive {
-		err := chat.Interactive()
+		c := chat.New()
+		err := c.BuildLexicon()
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		err = c.Interactive()
 		if err != nil {
 			fmt.Println("error:", err)
 		}
