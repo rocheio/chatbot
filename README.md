@@ -14,6 +14,7 @@ go test ./... --cover
 # Build and run the interactive chatbot program
 go build ./cmd/chatbot
 ./chatbot --input="Hello, how are you?"
+./chatbot --interactive
 ```
 
 ## Downloading Corpuses

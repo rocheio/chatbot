@@ -15,7 +15,7 @@ var negativeArticle = "no"
 var indefiniteArticles = []string{"a", "an", "some"}
 var nouns = []string{"me", "you", "he", "she", "it"}
 var verbs = []string{"am", "is", "was", "has", "wants"}
-var interjections = []string{"hello", "hi", "hey"}
+var greetings = []string{"hello", "hi", "hey"}
 
 // normalizeWhitespace returns a string separated by only single spaces
 func normalizeWhitespace(s string) string {
@@ -251,6 +251,14 @@ func (l Lexicon) ExclusionClause(excluded []string) Clause {
 		Verb:      verb,
 		Predicate: pred,
 	}
+}
+
+// IsGreeting returns true if the Lexicon knows a string as a greeting
+func (l Lexicon) IsGreeting(s string) bool {
+	if contains(greetings, s) {
+		return true
+	}
+	return false
 }
 
 // Sentence represents a grammatically correct series of words
