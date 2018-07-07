@@ -29,17 +29,21 @@ func (c *Chat) Add(speaker, text string) {
 func (c *Chat) Greet() {
 	speaker := "chatbot"
 	greeting := c.lex.RandomGreeting()
-	c.Add(speaker, greeting)
 	fmt.Printf("%s: %s\n", speaker, greeting)
+	c.Add(speaker, greeting)
 }
 
-// Response prints out a response to an input
-func (c *Chat) Response(input string) (string, error) {
+// Respond prints out a response to an input
+func (c *Chat) Respond(input string) {
 	if c.lex.IsGreeting(input) {
-		return "", nil
+		c.Greet()
+		return
 	}
 
-	return "I'm confused", nil
+	speaker := "chatbot"
+	response := "I'm confused"
+	fmt.Printf("%s: %s\n", speaker, response)
+	c.Add(speaker, response)
 }
 
 // Message is a one-direction piece of communication
@@ -66,12 +70,12 @@ func Interactive() {
 			break
 		}
 		c.Add("you", text)
-		c.Greet()
+		c.Respond(text)
 		fmt.Print("you: ")
 	}
 
-	if scanner.Err() != nil {
-		// handle error.
+	if err := scanner.Err(); err != nil {
+		panic(err)
 	}
 
 	fmt.Printf("saved text: %s\n", c.Messages)

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 
 	"github.com/rocheio/chatbot/pkg/chat"
 )
@@ -22,11 +21,7 @@ func main() {
 
 	if input != "" {
 		c := chat.New()
-		response, err := c.Response(input)
-		if err != nil {
-			fmt.Println("error:", err)
-		}
-		fmt.Println(response)
+		c.Respond(input)
 		return
 	}
 
